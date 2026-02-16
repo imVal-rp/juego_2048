@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-class TileWidget extends StatelessWidget {
-  final int value;
-  const TileWidget({super.key, required this.value});
+class WidgetFicha extends StatelessWidget {
+  final int valor;
+  const WidgetFicha({super.key, required this.valor});
 
-  Color getTileColor(int value) {
-    switch (value) {
+  // Elige el color según el número
+  Color obtenerColorFicha(int valor) {
+    switch (valor) {
       case 2: return Colors.orange[100]!;
       case 4: return Colors.orange[200]!;
       case 8: return Colors.orange[300]!;
@@ -25,13 +26,17 @@ class TileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: getTileColor(value),
+        color: obtenerColorFicha(valor),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
         child: Text(
-          value == 0 ? "" : "$value",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black54),
+          valor == 0 ? "" : "$valor",
+          style: const TextStyle(
+            fontSize: 24, 
+            fontWeight: FontWeight.bold, 
+            color: Colors.black54
+          ),
         ),
       ),
     );

@@ -2,44 +2,46 @@ import 'package:flutter/material.dart';
 import '../game_logic.dart';
 import '../widgets/tile_widget.dart';
 
-class GameScreen extends StatefulWidget {
+class PantallaJuego extends StatefulWidget {
   @override
-  _GameScreenState createState() => _GameScreenState();
+  _EstadoPantallaJuego createState() => _EstadoPantallaJuego();
 }
 
-class _GameScreenState extends State<GameScreen> {
-  GameLogic game = GameLogic();
+class _EstadoPantallaJuego extends State<PantallaJuego> {
+  // Instancia de la lógica en español
+  LogicaJuego juego = LogicaJuego();
 
   @override
   void initState() {
     super.initState();
-    game.initGame();
+    juego.iniciarJuego();
   }
 
-  void handleMove(String direction) {
+  // Maneja lo que pasa cuando mueves el dedo
+  void manejarMovimiento(String direccion) {
     setState(() {
-      if (game.move(direction)) {
-        game.addNewTile();
-        if (game.isGameOver()) {
-          _showGameOverDialog();
+      if (juego.mover(direccion)) {
+        juego.agregarNuevaFicha();
+        if (juego.esFinDeJuego()) {
+          _mostrarDialogoFinJuego();
         }
       }
     });
   }
 
-  void _showGameOverDialog() {
+  void _mostrarDialogoFinJuego() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Game Over"),
-        content: Text("Tu puntaje: ${game.score}"),
+        title: const Text("Fin del Juego"),
+        content: Text("Tu puntaje final fue: ${juego.puntaje}"),
         actions: [
           TextButton(
             onPressed: () {
-              setState(() => game.initGame());
+              setState(() => juego.iniciarJuego());
               Navigator.pop(context);
             },
-            child: Text("Reiniciar"),
+            child: const Text("Reiniciar"),
           )
         ],
       ),
@@ -51,73 +53,75 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text("2048 - Valeria Rodríguez"),
+        title: const Text("2048"),
         backgroundColor: Colors.orange[800],
       ),
       body: OrientationBuilder(
-        builder: (context, orientation) {
-          return orientation == Orientation.portrait
+        builder: (context, orientacion) {
+          // Si el teléfono está vertical (portrait) o horizontal (landscape)
+          return orientacion == Orientation.portrait
               ? Column(children: [
-                  Expanded(flex: 1, child: _buildHeader()),
-                  Expanded(flex: 3, child: _buildGrid()),
+                  Expanded(flex: 1, child: _construirEncabezado()),
+                  Expanded(flex: 3, child: _construirCuadricula()),
                 ])
               : Row(children: [
-                  Expanded(child: _buildHeader()),
-                  Expanded(child: _buildGrid()),
+                  Expanded(child: _construirEncabezado()),
+                  Expanded(child: _construirCuadricula()),
                 ]);
         },
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _construirEncabezado() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text("SCORE", style: TextStyle(fontSize: 18, color: Colors.grey)),
-          Text("${game.score}", style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+          const Text("PUNTAJE", style: TextStyle(fontSize: 18, color: Colors.grey)),
+          Text("${juego.puntaje}", style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
           ElevatedButton(
-            onPressed: () => setState(() => game.initGame()),
-            child: Text("Nueva Partida"),
+            onPressed: () => setState(() => juego.iniciarJuego()),
+            child: const Text("Nueva Partida"),
           )
         ],
       ),
     );
   }
 
-  Widget _buildGrid() {
+  Widget _construirCuadricula() {
     return GestureDetector(
-      onVerticalDragEnd: (details) {
-        if (details.primaryVelocity! < 0) handleMove('up');
-        if (details.primaryVelocity! > 0) handleMove('down');
+      onVerticalDragEnd: (detalles) {
+        if (detalles.primaryVelocity! < 0) manejarMovimiento('arriba');
+        if (detalles.primaryVelocity! > 0) manejarMovimiento('abajo');
       },
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity! < 0) handleMove('left');
-        if (details.primaryVelocity! > 0) handleMove('right');
+      onHorizontalDragEnd: (detalles) {
+        if (detalles.primaryVelocity! < 0) manejarMovimiento('izquierda');
+        if (detalles.primaryVelocity! > 0) manejarMovimiento('derecha');
       },
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: AspectRatio(
           aspectRatio: 1.0,
           child: Container(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               color: Colors.brown[400],
               borderRadius: BorderRadius.circular(12),
             ),
             child: GridView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
               ),
               itemCount: 16,
-              itemBuilder: (context, index) {
-                int x = index ~/ 4;
-                int y = index % 4;
-                return TileWidget(value: game.grid[x][y]);
+              itemBuilder: (context, indice) {
+                int x = indice ~/ 4;
+                int y = indice % 4;
+                // Usamos el widget de la ficha con el nombre nuevo
+                return WidgetFicha(valor: juego.cuadricula[x][y]);
               },
             ),
           ),

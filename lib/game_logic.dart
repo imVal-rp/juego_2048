@@ -1,87 +1,91 @@
 import 'dart:math';
 
-class GameLogic {
-  List<List<int>> grid = List.generate(4, (_) => List.filled(4, 0));
-  int score = 0;
+class LogicaJuego {
+  // La cuadrícula de 4x4 y el puntaje
+  List<List<int>> cuadricula = List.generate(4, (_) => List.filled(4, 0));
+  int puntaje = 0;
 
-  void initGame() {
-    grid = List.generate(4, (_) => List.filled(4, 0));
-    score = 0;
-    addNewTile();
-    addNewTile();
+  // Reinicia todo para una nueva partida
+  void iniciarJuego() {
+    cuadricula = List.generate(4, (_) => List.filled(4, 0));
+    puntaje = 0;
+    agregarNuevaFicha();
+    agregarNuevaFicha();
   }
 
-  void addNewTile() {
-    List<List<int>> emptyCells = [];
+  // Busca un lugar vacío y pone un 2 o un 4
+  void agregarNuevaFicha() {
+    List<List<int>> celdasVacias = [];
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        if (grid[i][j] == 0) emptyCells.add([i, j]);
+        if (cuadricula[i][j] == 0) celdasVacias.add([i, j]);
       }
     }
-    if (emptyCells.isNotEmpty) {
-      var r = Random().nextInt(emptyCells.length);
-      grid[emptyCells[r][0]][emptyCells[r][1]] = Random().nextInt(10) == 0 ? 4 : 2;
+    if (celdasVacias.isNotEmpty) {
+      var r = Random().nextInt(celdasVacias.length);
+      cuadricula[celdasVacias[r][0]][celdasVacias[r][1]] = Random().nextInt(10) == 0 ? 4 : 2;
     }
   }
 
-  // Función base: Mover a la izquierda
-  bool moveLeft() {
-    bool moved = false;
+  // Lógica principal para mover a la izquierda y sumar números
+  bool moverIzquierda() {
+    bool movido = false;
     for (int i = 0; i < 4; i++) {
-      List<int> row = grid[i].where((e) => e != 0).toList();
-      for (int j = 0; j < row.length - 1; j++) {
-        if (row[j] == row[j + 1]) {
-          row[j] *= 2;
-          score += row[j];
-          row.removeAt(j + 1);
-          moved = true;
+      List<int> fila = cuadricula[i].where((e) => e != 0).toList();
+      for (int j = 0; j < fila.length - 1; j++) {
+        if (fila[j] == fila[j + 1]) {
+          fila[j] *= 2;
+          puntaje += fila[j];
+          fila.removeAt(j + 1);
+          movido = true;
         }
       }
-      while (row.length < 4) row.add(0);
-      if (grid[i].toString() != row.toString()) moved = true;
-      grid[i] = row;
+      while (fila.length < 4) fila.add(0);
+      if (cuadricula[i].toString() != fila.toString()) movido = true;
+      cuadricula[i] = fila;
     }
-    return moved;
+    return movido;
   }
 
-  // Rotar matriz 90 grados a la derecha
-  void rotate() {
-    List<List<int>> newGrid = List.generate(4, (_) => List.filled(4, 0));
+  // Gira la matriz para poder usar 'moverIzquierda' en todas direcciones
+  void rotar() {
+    List<List<int>> nuevaCuadricula = List.generate(4, (_) => List.filled(4, 0));
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        newGrid[j][3 - i] = grid[i][j];
+        nuevaCuadricula[j][3 - i] = cuadricula[i][j];
       }
     }
-    grid = newGrid;
+    cuadricula = nuevaCuadricula;
   }
 
-  // Movimientos en las 4 direcciones usando rotación
-  bool move(String direction) {
-    bool moved = false;
-    if (direction == 'left') {
-      moved = moveLeft();
-    } else if (direction == 'right') {
-      rotate(); rotate();
-      moved = moveLeft();
-      rotate(); rotate();
-    } else if (direction == 'up') {
-      rotate(); rotate(); rotate();
-      moved = moveLeft();
-      rotate();
-    } else if (direction == 'down') {
-      rotate();
-      moved = moveLeft();
-      rotate(); rotate(); rotate();
+  // Controla hacia dónde se mueve el usuario
+  bool mover(String direccion) {
+    bool movido = false;
+    if (direccion == 'izquierda') {
+      movido = moverIzquierda();
+    } else if (direccion == 'derecha') {
+      rotar(); rotar();
+      movido = moverIzquierda();
+      rotar(); rotar();
+    } else if (direccion == 'arriba') {
+      rotar(); rotar(); rotar();
+      movido = moverIzquierda();
+      rotar();
+    } else if (direccion == 'abajo') {
+      rotar();
+      movido = moverIzquierda();
+      rotar(); rotar(); rotar();
     }
-    return moved;
+    return movido;
   }
 
-  bool isGameOver() {
+  // Revisa si ya no puedes hacer más movimientos
+  bool esFinDeJuego() {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
-        if (grid[i][j] == 0) return false;
-        if (i < 3 && grid[i][j] == grid[i + 1][j]) return false;
-        if (j < 3 && grid[i][j] == grid[i][j + 1]) return false;
+        if (cuadricula[i][j] == 0) return false;
+        if (i < 3 && cuadricula[i][j] == cuadricula[i + 1][j]) return false;
+        if (j < 3 && cuadricula[i][j] == cuadricula[i][j + 1]) return false;
       }
     }
     return true;
